@@ -3,17 +3,37 @@ import express from 'express'
 const app = express()
 
 const servers = [
-    'http://localhost:3000',
-    'http://localhost:3001',
+    { url: 'http://localhost:3000', healthy: true },
+    { url: 'http://localhost:3001', healthy: true },
+    { url: 'http://localhost:3002', healthy: true },
 ]
 
 let currentIndex = 0
 
 function getNextServer() {
+    let healthyServers = servers.filter(server => server.healthy)
+    if (healthyServers.length === 0) {
+        return null
+    }
     const server = servers[currentIndex]
-    currentIndex = (currentIndex + 1) % servers.length
-    return server
-}   
+    currentIndex = (currentIndex + 1) % healthyServers.length
+    return server.url
+} 
+
+async function healthCheck(server) {
+    try {
+        const response = await fetch(`${server.url}/health`)
+        server.healthy = response.status === 200 ? true : false
+        console.log(`${server.url} health check: ${server.healthy ? 'Healthy' : 'Unhealthy'}`)
+    } catch (error) {
+        server.healthy = false
+        console.error(`${server.url} health check failed: ${error.message}`)
+    }
+}
+
+setInterval(() => {
+    servers.forEach(healthCheck)
+}, 5000)
 
 app.use(async (req, res, next) => {
 
