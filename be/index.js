@@ -1,15 +1,16 @@
 import express from 'express'
 
 const app = express()
+const PORT = process.env.PORT || 3000
 
 app.get('/', (req, res) => {
-  res.status(200).json({mssg: `Hello from Backend Server\n`})  
+  res.status(200).json({mssg: `Hello from Backend Server running on port ${PORT}\n`})  
 })
 
-app.listen(3000, (error) => {
+app.listen(PORT, (error) => {
     if (error) {
         console.log(error)
         return
     }
-    console.log(`Server is successfully running on port 3000`)
+    console.log(`Server is successfully running on port ${PORT}`)
 })

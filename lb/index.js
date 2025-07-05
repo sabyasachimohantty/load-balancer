@@ -2,28 +2,42 @@ import express from 'express'
 
 const app = express()
 
-app.get('/', async (req, res) => {
-    // console.log(`
-    //   Received request from ${req.ip} 
-    //   ${req.method} ${req.path} HTTP/${req.httpVersion}
-    //   Host: ${req.headers['host']}
-    //   User-Agent: ${req.headers['user-agent']} 
-    //   Accept: ${req.headers['accept']}
-    // `)
+const servers = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+]
+
+let currentIndex = 0
+
+function getNextServer() {
+    const server = servers[currentIndex]
+    currentIndex = (currentIndex + 1) % servers.length
+    return server
+}   
+
+app.use(async (req, res, next) => {
+
+    const server = getNextServer()
     
     try {
-        const response = await fetch('http://localhost:3000')
+        const backendUrl = `${server}${req.url}`
+        const options = {
+            method: req.method,
+            headers: req.headers
+        }
+        const response = await fetch(backendUrl, options)
         const data = await response.json()
-        res.send(data.mssg)
+        res.status(response.status).send(data.mssg)
+        next()
     } catch (error) {
         console.log(error)
     }
 })
 
-app.listen(8080, (error) => {
+app.listen(8000, (error) => {
     if (error) {
         console.log(error)
         return
     }
-    console.log(`The lb is running on port 8080`)
+    console.log(`The lb is running on port 8000`)
 })
