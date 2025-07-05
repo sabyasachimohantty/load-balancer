@@ -31,6 +31,7 @@ async function healthCheck(server) {
     }
 }
 
+// Cron job for health check
 setInterval(() => {
     servers.forEach(healthCheck)
 }, 5000)
